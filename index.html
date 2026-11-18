@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodQA Lab — Automated Food Delivery Quality Assessment</title>
+<style>
+/* ============ DIGITAL LAVENDER LIGHT THEME ============ */
+:root{
+  --bg:#F5F3FF; --bg2:#FAF8FF; --card:#FFFFFF;
+  --purple:#A78BFA; --purple-dark:#7C3AED; --purple-deep:#5B21B6;
+  --lavender-soft:#EDE9FE; --lavender-mid:#DDD6FE;
+  --pink:#F9A8D4; --pink-soft:#FDF2F8;
+  --mint:#6EE7B7; --mint-soft:#ECFDF5;
+  --amber:#FCD34D; --amber-soft:#FFFBEB;
+  --rose:#FDA4AF; --rose-soft:#FFF1F2;
+  --text:#2E1065; --text-soft:#6D28D9; --muted:#7E7390;
+  --border:#E9E4FF;
+  --shadow:0 20px 50px rgba(124,58,237,.14);
+  --shadow-sm:0 8px 24px rgba(124,58,237,.10);
+  --radius:22px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--text); overflow-x:hidden; min-height:100vh;
+}
+::selection{background:var(--purple);color:#fff}
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:var(--lavender-soft)}
+::-webkit-scrollbar-thumb{background:linear-gradient(var(--purple),var(--purple-dark));border-radius:99px}
+
+/* ============ BACKGROUND FLOW ANIMATION ============ */
+.bg-flow{position:fixed;inset:0;z-index:-3;overflow:hidden;background:linear-gradient(160deg,#F5F3FF 0%,#FAF8FF 40%,#FDF2F8 100%)}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;will-change:transform}
+.blob.b1{width:560px;height:560px;background:#DDD6FE;top:-160px;left:-120px;animation:drift1 18s ease-in-out infinite alternate}
+.blob.b2{width:480px;height:480px;background:#FBCFE8;bottom:-140px;right:-100px;animation:drift2 22s ease-in-out infinite alternate}
+.blob.b3{width:380px;height:380px;background:#A7F3D0;top:40%;left:55%;animation:drift3 26s ease-in-out infinite alternate;opacity:.35}
+.blob.b4{width:300px;height:300px;background:#FDE68A;top:65%;left:8%;animation:drift1 24s ease-in-out infinite alternate-reverse;opacity:.30}
+@keyframes drift1{0%{transform:translate(0,0) scale(1)}100%{transform:translate(140px,90px) scale(1.15)}}
+@keyframes drift2{0%{transform:translate(0,0) scale(1.1)}100%{transform:translate(-130px,-110px) scale(.9)}}
+@keyframes drift3{0%{transform:translate(0,0)}50%{transform:translate(-90px,70px)}100%{transform:translate(60px,-60px)}}
+.bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(167,139,250,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,.07) 1px,transparent 1px);background-size:44px 44px;animation:gridFlow 20s linear infinite}
+@keyframes gridFlow{0%{background-position:0 0}100%{background-position:44px 44px}}
+.bg-wave{position:absolute;bottom:-10px;left:0;width:200%;height:180px;opacity:.5;animation:waveMove 14s linear infinite}
+@keyframes waveMove{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.particle{position:absolute;border-radius:50%;background:var(--purple);opacity:.35;animation:floatUp linear infinite;will-change:transform,opacity}
+@keyframes floatUp{0%{transform:translateY(110vh) translateX(0);opacity:0}10%{opacity:.4}90%{opacity:.4}100%{transform:translateY(-10vh) translateX(30px);opacity:0}}
+
+/* ============ PAGE LOADING ANIMATION ============ */
+#loader{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#F5F3FF,#EDE9FE,#FDF2F8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;transition:opacity .7s ease,visibility .7s}
+#loader.done{opacity:0;visibility:hidden}
+.loader-rings{position:relative;width:120px;height:120px}
+.loader-rings span{position:absolute;inset:0;border-radius:50%;border:4px solid transparent}
+.loader-rings span:nth-child(1){border-top-color:var(--purple-dark);animation:spin 1s linear infinite}
+.loader-rings span:nth-child(2){inset:16px;border-right-color:var(--purple);animation:spin 1.4s linear infinite reverse}
+.loader-rings span:nth-child(3){inset:32px;border-bottom-color:var(--pink);animation:spin 1.8s linear infinite}
+.loader-core{position:absolute;inset:44px;background:linear-gradient(135deg,var(--purple),var(--purple-dark));border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:800;animation:pulseCore 1.4s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulseCore{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.loader-title{font-size:26px;font-weight:800;letter-spacing:.5px;background:linear-gradient(90deg,var(--purple-deep),var(--purple-dark),#DB2777);-webkit-background-clip:text;background-clip:text;color:transparent}
+.loader-bar{width:260px;height:10px;background:#fff;border-radius:99px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.loader-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--purple-dark),#DB2777);border-radius:99px;animation:loadFill 1.8s ease forwards}
+@keyframes loadFill{0%{width:0}60%{width:70%}100%{width:100%}}
+.loader-sub{color:var(--muted);font-size:13px;letter-spacing:2px;text-transform:uppercase;animation:blinkSoft 1.2s ease-in-out infinite}
+@keyframes blinkSoft{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* ============ PAGE CHANGE — 3D FLIP ============ */
+#curtain{display:none}
+main{perspective:1600px}
+.flip-hint{position:fixed;bottom:18px;right:18px;z-index:8000;background:rgba(255,255,255,.9);border:1px solid var(--border);color:var(--purple-deep);font-size:11px;font-weight:800;padding:8px 14px;border-radius:99px;box-shadow:var(--shadow-sm);pointer-events:none;animation:flipHintFade 3s ease forwards}
+@keyframes flipHintFade{0%,80%{opacity:1}100%{opacity:0}}
+
+/* ============ NAVBAR ============ */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(255,255,255,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);box-shadow:0 4px 24px rgba(124,58,237,.06)}
+.logo{display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.logo-badge{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--purple),var(--purple-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;box-shadow:0 8px 20px rgba(124,58,237,.35);animation:logoFloat 3s ease-in-out infinite;transition:transform .3s}
+.logo:hover .logo-badge{transform:rotate(-8deg) scale(1.08)}
+@keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.logo-text{line-height:1.1}
+.logo-text b{font-size:19px;color:var(--purple-deep)}
+.logo-text small{display:block;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.nav-links{display:flex;gap:6px;flex-wrap:wrap}
+.nav-btn{position:relative;border:none;background:transparent;padding:10px 18px;border-radius:99px;font-size:14px;font-weight:700;color:var(--text-soft);cursor:pointer;overflow:hidden;transition:color .3s,transform .2s;font-family:inherit}
+.nav-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--purple),var(--purple-dark));border-radius:99px;transform:scale(.6);opacity:0;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .3s;z-index:-1}
+.nav-btn:hover{color:var(--purple-deep);transform:translateY(-2px)}
+.nav-btn:hover::before{transform:scale(1);opacity:.15}
+.nav-btn.active{color:#fff}
+.nav-btn.active::before{transform:scale(1);opacity:1}
+.nav-btn:active{transform:scale(.95)}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);transform:scale(0);animation:rippleAnim .6s ease-out forwards;pointer-events:none}
+.ripple.dark{background:rgba(124,58,237,.25)}
+@keyframes rippleAnim{to{transform:scale(4);opacity:0}}
+.burger{display:none;background:var(--lavender-soft);border:none;width:44px;height:44px;border-radius:12px;font-size:20px;cursor:pointer;color:var(--purple-deep)}
+
+/* ============ PAGE SYSTEM ============ */
+main{padding-top:92px;min-height:100vh}
+.page{display:none;max-width:1240px;margin:0 auto;padding:28px 24px 70px}
+.page.active{display:block;animation:flipIn .7s cubic-bezier(.22,1,.36,1) both;transform-origin:center center;backface-visibility:hidden}
+@keyframes flipIn{0%{opacity:0;transform:rotateY(-72deg) rotateX(8deg) translateY(30px) scale(.94)}55%{opacity:1;transform:rotateY(6deg) rotateX(-2deg) translateY(-4px) scale(1.005)}100%{opacity:1;transform:rotateY(0deg) rotateX(0deg) translateY(0) scale(1)}}
+.page-leaving{display:block;animation:flipOut .32s cubic-bezier(.55,.06,.68,.19) both;transform-origin:center center;backface-visibility:hidden}
+@keyframes flipOut{0%{opacity:1;transform:rotateY(0deg) scale(1)}100%{opacity:0;transform:rotateY(68deg) rotateX(-6deg) translateY(-24px) scale(.94)}}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1)}
+.reveal.in{opacity:1;transform:translateY(0)}
+
+/* ============ BUTTONS ============ */
+.btn{position:relative;display:inline-flex;align-items:center;gap:10px;border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:15px;padding:15px 30px;border-radius:99px;overflow:hidden;transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .3s;text-decoration:none}
+.btn:active{transform:scale(.94)}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;box-shadow:0 12px 30px rgba(124,58,237,.35)}
+.btn-primary:hover{transform:translateY(-4px) scale(1.03);box-shadow:0 18px 38px rgba(124,58,237,.45)}
+.btn-primary::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:btnShine 2.8s ease infinite}
+@keyframes btnShine{0%{left:-80%}55%,100%{left:130%}}
+.btn-ghost{background:#fff;color:var(--purple-deep);border:2px solid var(--lavender-mid);box-shadow:var(--shadow-sm)}
+.btn-ghost:hover{transform:translateY(-4px);border-color:var(--purple);box-shadow:var(--shadow)}
+.btn-pink{background:linear-gradient(135deg,#F9A8D4,#EC4899);color:#fff;box-shadow:0 12px 30px rgba(236,72,153,.3)}
+.btn-pink:hover{transform:translateY(-4px) scale(1.03);box-shadow:0 18px 38px rgba(236,72,153,.4)}
+.btn-sm{padding:10px 20px;font-size:13px}
+.btn .arr{transition:transform .3s}
+.btn:hover .arr{transform:translateX(5px)}
+
+/* ============ CARDS ============ */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:26px;transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s}
+.card:hover{transform:translateY(-6px);box-shadow:var(--shadow)}
+.tag{display:inline-block;padding:6px 14px;border-radius:99px;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
+.tag-purple{background:var(--lavender-soft);color:var(--purple-deep)}
+.tag-pink{background:var(--pink-soft);color:#BE185D}
+.tag-mint{background:var(--mint-soft);color:#047857}
+.tag-amber{background:var(--amber-soft);color:#B45309}
+.tag-rose{background:var(--rose-soft);color:#BE123C}
+
+/* ============ HERO + 3D SCENE ============ */
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center;padding:26px 0 10px}
+.hero h1{font-size:clamp(34px,4.6vw,56px);line-height:1.08;font-weight:900;color:var(--purple-deep);letter-spacing:-.5px}
+.hero h1 .grad{background:linear-gradient(90deg,var(--purple-dark),#DB2777,var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{margin:18px 0 26px;font-size:17px;line-height:1.65;color:#5B4A7A;max-width:560px}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap}
+.hero-stats{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap}
+.hstat{background:#fff;border:1px solid var(--border);border-radius:18px;padding:16px 20px;min-width:118px;box-shadow:var(--shadow-sm);transition:transform .3s}
+.hstat:hover{transform:translateY(-5px) rotate(-1deg)}
+.hstat b{font-size:26px;color:var(--purple-dark);display:block}
+.hstat span{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.scene-wrap{perspective:1200px;display:flex;justify-content:center}
+.scene{position:relative;width:340px;height:520px;transform-style:preserve-3d;transition:transform .25s ease-out}
+.phone3d{position:absolute;left:50%;top:50%;width:230px;height:470px;margin:-235px 0 0 -115px;background:#1E1B2E;border-radius:38px;padding:10px;box-shadow:0 40px 80px rgba(46,16,101,.35),inset 0 0 0 2px #3B3555;transform:rotateY(-14deg) rotateX(6deg);animation:phoneSpin 9s ease-in-out infinite}
+@keyframes phoneSpin{0%,100%{transform:rotateY(-16deg) rotateX(6deg)}50%{transform:rotateY(10deg) rotateX(3deg)}}
+.phone-screen{width:100%;height:100%;background:linear-gradient(180deg,#FAF8FF,#F5F3FF);border-radius:30px;overflow:hidden;display:flex;flex-direction:column}
+.phone-notch{width:90px;height:20px;background:#1E1B2E;border-radius:0 0 14px 14px;margin:0 auto}
+.phone-app{padding:14px 14px 10px;flex:1;display:flex;flex-direction:column;gap:10px}
+.pa-head{display:flex;justify-content:space-between;align-items:center}
+.pa-head b{font-size:13px;color:var(--purple-deep)}
+.pa-head span{font-size:10px;background:var(--lavender-soft);padding:3px 8px;border-radius:99px;color:var(--purple-deep);font-weight:700}
+.pa-search{background:#fff;border:1px solid var(--border);border-radius:12px;padding:9px 12px;font-size:11px;color:var(--muted)}
+.pa-cats{display:flex;gap:6px}
+.pa-cats i{flex:1;text-align:center;font-style:normal;font-size:9px;font-weight:800;padding:7px 0;border-radius:10px;background:#fff;border:1px solid var(--border);color:var(--purple-deep)}
+.pa-cats i.on{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;border:none}
+.pa-food{background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px;display:flex;gap:10px;align-items:center;animation:paSlide 3s ease-in-out infinite}
+.pa-food:nth-child(3){animation-delay:.4s}
+@keyframes paSlide{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
+.pa-thumb{width:44px;height:44px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+.pa-food b{font-size:11px;color:var(--purple-deep);display:block}
+.pa-food small{font-size:9px;color:var(--muted)}
+.pa-food em{margin-left:auto;font-style:normal;font-size:10px;font-weight:800;color:#047857;background:var(--mint-soft);padding:3px 7px;border-radius:99px}
+.pa-cart{margin-top:auto;background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;border-radius:14px;padding:11px;text-align:center;font-size:11px;font-weight:800;animation:cartPulse 2s ease-in-out infinite}
+@keyframes cartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+.float-card{position:absolute;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:16px;padding:12px 16px;box-shadow:var(--shadow);z-index:3;animation:floatY 4s ease-in-out infinite}
+.float-card b{font-size:17px;color:var(--purple-deep);display:block}
+.float-card span{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.fc1{top:30px;left:-58px;transform:translateZ(70px);animation-delay:.2s}
+.fc2{top:150px;right:-66px;transform:translateZ(90px);animation-delay:.8s}
+.fc3{bottom:120px;left:-72px;transform:translateZ(60px);animation-delay:1.3s}
+.fc4{bottom:26px;right:-40px;transform:translateZ(80px);animation-delay:.5s}
+@keyframes floatY{0%,100%{margin-top:0}50%{margin-top:-14px}}
+.orbit-ring{position:absolute;left:50%;top:50%;width:430px;height:430px;margin:-215px 0 0 -215px;border:2px dashed rgba(167,139,250,.35);border-radius:50%;animation:orbitSpin 26s linear infinite}
+.orbit-ring::before{content:'';position:absolute;top:-7px;left:50%;width:14px;height:14px;background:var(--purple);border-radius:50%;box-shadow:0 0 0 5px rgba(167,139,250,.25)}
+@keyframes orbitSpin{to{transform:rotate(360deg)}}
+
+/* ============ SECTION HEADS ============ */
+.sec-head{text-align:center;margin:44px 0 26px}
+.sec-head h2{font-size:clamp(26px,3.4vw,38px);font-weight:900;color:var(--purple-deep);margin-top:12px}
+.sec-head p{color:var(--muted);margin-top:8px;font-size:15px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.pillar{text-align:center}
+.pillar .ico{width:60px;height:60px;margin:0 auto 14px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px}
+.pillar h3{color:var(--purple-deep);font-size:17px;margin-bottom:8px}
+.pillar p{color:var(--muted);font-size:13.5px;line-height:1.6}
+.flow-strip{margin-top:26px;background:linear-gradient(90deg,var(--lavender-soft),var(--pink-soft),var(--mint-soft));border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;font-weight:800;color:var(--purple-deep);font-size:13.5px}
+.flow-strip .step{background:#fff;padding:9px 16px;border-radius:99px;box-shadow:var(--shadow-sm);animation:stepPop 2.4s ease-in-out infinite}
+.flow-strip .step:nth-child(3){animation-delay:.3s}.flow-strip .step:nth-child(5){animation-delay:.6s}.flow-strip .step:nth-child(7){animation-delay:.9s}
+@keyframes stepPop{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.flow-strip .arr{color:var(--purple)}
+
+/* ============ SIMULATION PAGE ============ */
+.sim-grid{display:grid;grid-template-columns:400px 1fr;gap:22px;align-items:start}
+.sim-panel{background:#fff;border:1px solid var(--border);border-radius:26px;box-shadow:var(--shadow);padding:22px}
+.sim-panel h3{color:var(--purple-deep);font-size:18px;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.sim-panel .sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+.live-dot{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;color:#047857;background:var(--mint-soft);padding:5px 12px;border-radius:99px;text-transform:uppercase;letter-spacing:1px}
+.live-dot i{width:8px;height:8px;border-radius:50%;background:#10B981;animation:liveBlink 1.2s ease-in-out infinite}
+@keyframes liveBlink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+/* phone sim */
+.sim-phone{width:280px;margin:6px auto 14px;background:#1E1B2E;border-radius:34px;padding:9px;box-shadow:0 24px 50px rgba(46,16,101,.3)}
+.sim-screen{background:linear-gradient(180deg,#FAF8FF,#F5F3FF);border-radius:26px;height:480px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.sim-screen .phone-notch{width:80px;height:18px}
+.sim-body{padding:14px;flex:1;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.sim-title{font-size:15px;font-weight:900;color:var(--purple-deep)}
+.sim-input{background:#fff;border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:12px;color:var(--muted)}
+.sim-btn{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:800;text-align:center;animation:cartPulse 2s ease-in-out infinite}
+.sim-food{background:#fff;border:1px solid var(--border);border-radius:14px;padding:11px;display:flex;gap:10px;align-items:center}
+.sim-food b{font-size:12px;color:var(--purple-deep);display:block}
+.sim-food small{font-size:10px;color:var(--muted)}
+.sim-food .price{margin-left:auto;font-weight:800;color:var(--purple-dark);font-size:12px}
+.sim-row{display:flex;justify-content:space-between;font-size:12px;color:#5B4A7A;padding:4px 2px}
+.sim-row b{color:var(--purple-deep)}
+.sim-total{border-top:1px dashed var(--lavender-mid);padding-top:8px;font-size:14px}
+.sim-track{flex:1;background:#fff;border:1px solid var(--border);border-radius:14px;position:relative;overflow:hidden;min-height:150px}
+.sim-track .road{position:absolute;left:0;right:0;top:50%;height:8px;background:var(--lavender-soft);border-radius:99px;transform:translateY(-50%)}
+.sim-track .fill{position:absolute;left:0;top:50%;height:8px;background:linear-gradient(90deg,var(--purple),#DB2777);border-radius:99px;transform:translateY(-50%);width:0;transition:width 1s linear}
+.sim-track .bike{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:22px;transition:left 1s linear;filter:drop-shadow(0 4px 6px rgba(0,0,0,.2))}
+.sim-track .pin{position:absolute;font-size:18px}
+.sim-status{display:flex;gap:6px}
+.sim-status span{flex:1;text-align:center;font-size:9px;font-weight:800;padding:7px 2px;border-radius:9px;background:#fff;border:1px solid var(--border);color:var(--muted);transition:all .4s}
+.sim-status span.on{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;border:none;transform:scale(1.05)}
+.sim-status span.done{background:var(--mint-soft);color:#047857;border:none}
+.sim-progress{height:8px;background:var(--lavender-soft);border-radius:99px;overflow:hidden}
+.sim-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--purple),#DB2777);border-radius:99px;transition:width .5s ease}
+.sim-controls{display:flex;gap:10px;justify-content:center;margin-top:6px}
+.step-label{text-align:center;font-size:12px;font-weight:800;color:var(--purple-deep);letter-spacing:1px;text-transform:uppercase;min-height:18px}
+/* dashboard */
+.dash-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.metric{background:linear-gradient(160deg,#FAF8FF,#F5F3FF);border:1px solid var(--border);border-radius:16px;padding:14px;text-align:center}
+.metric b{font-size:22px;color:var(--purple-dark);display:block;font-variant-numeric:tabular-nums}
+.metric span{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.metric small{display:block;font-size:11px;color:#047857;font-weight:700;margin-top:2px}
+.test-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.test-item{display:flex;align-items:center;gap:11px;background:#FAF8FF;border:1px solid var(--border);border-radius:13px;padding:10px 13px;font-size:13px;font-weight:600;color:#5B4A7A;transition:all .4s}
+.test-item .st{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;background:#fff;border:2px solid var(--lavender-mid);color:var(--muted);transition:all .4s}
+.test-item.running{border-color:var(--purple);background:var(--lavender-soft)}
+.test-item.running .st{border-color:var(--purple);color:var(--purple-dark);animation:spinFast .8s linear infinite}
+.test-item.pass{border-color:#A7F3D0;background:var(--mint-soft)}
+.test-item.pass .st{background:#10B981;border-color:#10B981;color:#fff}
+.test-item.fail{border-color:#FECDD3;background:var(--rose-soft)}
+.test-item.fail .st{background:#F43F5E;border-color:#F43F5E;color:#fff}
+@keyframes spinFast{to{transform:rotate(360deg)}}
+.test-item .ms{margin-left:auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chart-wrap{background:#FAF8FF;border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:16px}
+.chart-wrap canvas{width:100%;height:190px;display:block}
+.workload-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.wl-btn{border:2px solid var(--lavender-mid);background:#fff;color:var(--purple-deep);font-weight:800;font-size:12px;padding:8px 14px;border-radius:99px;cursor:pointer;font-family:inherit;transition:all .25s}
+.wl-btn:hover{transform:translateY(-2px);border-color:var(--purple)}
+.wl-btn.on{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;border-color:transparent;box-shadow:0 8px 18px rgba(124,58,237,.3)}
+.defect-feed{display:flex;flex-direction:column;gap:8px;max-height:190px;overflow:hidden}
+.defect-item{display:flex;gap:10px;align-items:flex-start;background:#FAF8FF;border:1px solid var(--border);border-left:5px solid var(--purple);border-radius:12px;padding:10px 12px;font-size:12.5px;color:#5B4A7A;animation:defectIn .5s cubic-bezier(.22,1,.36,1) both}
+@keyframes defectIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+.defect-item.crit{border-left-color:#F43F5E}
+.defect-item.high{border-left-color:#F59E0B}
+.defect-item.med{border-left-color:#A78BFA}
+.defect-item.low{border-left-color:#10B981}
+.defect-item b{color:var(--purple-deep)}
+
+/* ============ MODULES PAGE ============ */
+.module-hero{background:linear-gradient(135deg,#fff,var(--lavender-soft));border:1px solid var(--border);border-radius:26px;box-shadow:var(--shadow);padding:30px;margin-bottom:20px;position:relative;overflow:hidden}
+.module-hero::before{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(167,139,250,.35),transparent 70%);border-radius:50%}
+.module-hero h3{font-size:24px;color:var(--purple-deep);margin:10px 0 8px}
+.module-hero p{color:#5B4A7A;line-height:1.65;font-size:14.5px;max-width:760px}
+.tool-stack{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.tool-stack span{background:#fff;border:1px solid var(--lavender-mid);padding:7px 14px;border-radius:99px;font-size:12px;font-weight:800;color:var(--purple-deep)}
+.steps{display:flex;flex-direction:column;gap:12px}
+.step-card{display:flex;gap:16px;background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);transition:transform .3s,box-shadow .3s}
+.step-card:hover{transform:translateX(8px);box-shadow:var(--shadow)}
+.step-num{width:46px;height:46px;flex-shrink:0;border-radius:14px;background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;box-shadow:0 8px 18px rgba(124,58,237,.3)}
+.step-card h4{color:var(--purple-deep);font-size:15.5px;margin-bottom:5px}
+.step-card p{color:var(--muted);font-size:13.5px;line-height:1.6}
+.api-list{display:flex;flex-direction:column;gap:9px}
+.api-item{display:flex;align-items:center;gap:12px;background:#FAF8FF;border:1px solid var(--border);border-radius:13px;padding:11px 14px;font-size:13.5px;color:#5B4A7A}
+.api-item code{background:var(--lavender-soft);color:var(--purple-deep);font-weight:800;padding:4px 10px;border-radius:8px;font-size:12px;font-family:Consolas,monospace}
+.api-item .m{font-weight:900;font-size:11px;padding:4px 9px;border-radius:7px;color:#fff}
+.m-get{background:#10B981}.m-post{background:#F59E0B}
+
+/* ============ RESULTS PAGE ============ */
+.sev-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.sev-card{border-radius:20px;padding:22px;text-align:center;color:#fff;position:relative;overflow:hidden;transition:transform .3s}
+.sev-card:hover{transform:translateY(-8px) rotate(-1deg)}
+.sev-card b{font-size:30px;display:block}
+.sev-card h4{font-size:15px;letter-spacing:2px;margin:4px 0 10px}
+.sev-card p{font-size:12.5px;line-height:1.55;opacity:.95}
+.sev-crit{background:linear-gradient(150deg,#FB7185,#E11D48)}
+.sev-high{background:linear-gradient(150deg,#FBBF24,#D97706)}
+.sev-med{background:linear-gradient(150deg,#A78BFA,#7C3AED)}
+.sev-low{background:linear-gradient(150deg,#34D399,#059669)}
+.bar-row{display:grid;grid-template-columns:130px 1fr 60px;gap:12px;align-items:center;margin-bottom:13px;font-size:13px;font-weight:700;color:#5B4A7A}
+.bar-track{height:20px;background:var(--lavender-soft);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--purple),#DB2777);transition:width 1.2s cubic-bezier(.22,1,.36,1)}
+.bar-row b{color:var(--purple-deep);text-align:right;font-variant-numeric:tabular-nums}
+.fix-list{display:flex;flex-direction:column;gap:10px}
+.fix-item{display:flex;gap:12px;align-items:flex-start;background:var(--mint-soft);border:1px solid #A7F3D0;border-radius:14px;padding:14px;font-size:13.5px;color:#065F46;line-height:1.55}
+.fix-item .fi{font-size:18px}
+
+/* ============ ABOUT PAGE ============ */
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.team-card{text-align:center;padding:30px 22px}
+.avatar{width:84px;height:84px;margin:0 auto 14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#fff;box-shadow:0 12px 26px rgba(124,58,237,.3);animation:avatarFloat 3.5s ease-in-out infinite}
+@keyframes avatarFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.team-card h3{color:var(--purple-deep);font-size:17px}
+.team-card .role{color:var(--purple);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:5px 0 10px}
+.team-card p{color:var(--muted);font-size:13px;line-height:1.6}
+.ref-list{display:flex;flex-direction:column;gap:10px}
+.ref-item{background:#FAF8FF;border:1px solid var(--border);border-radius:13px;padding:13px 16px;font-size:12.5px;color:#5B4A7A;line-height:1.6}
+.ref-item b{color:var(--purple-deep)}
+.thanks{text-align:center;padding:44px 26px;background:linear-gradient(135deg,var(--lavender-soft),var(--pink-soft));border-radius:26px;border:1px solid var(--border)}
+.thanks h2{font-size:34px;font-weight:900;color:var(--purple-deep)}
+.thanks p{color:#5B4A7A;margin-top:10px}
+
+/* ============ FOOTER ============ */
+footer{border-top:1px solid var(--border);background:rgba(255,255,255,.7);backdrop-filter:blur(10px);padding:26px 24px;text-align:center;color:var(--muted);font-size:13px}
+footer b{color:var(--purple-deep)}
+
+/* ============ TOAST ============ */
+#toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,80px);background:linear-gradient(135deg,var(--purple-dark),var(--purple-deep));color:#fff;padding:14px 26px;border-radius:99px;font-weight:800;font-size:14px;box-shadow:0 16px 36px rgba(91,33,182,.4);z-index:9500;transition:transform .45s cubic-bezier(.34,1.56,.64,1);opacity:0}
+#toast.show{transform:translate(-50%,0);opacity:1}
+
+/* ============ MODULE SIMULATORS ============ */
+.simulator-box{background:#fff;border:2px solid var(--lavender-mid);border-radius:26px;box-shadow:var(--shadow);padding:26px;margin:22px 0;position:relative;overflow:hidden}
+.simulator-box::before{content:'';position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--purple),#DB2777,var(--mint))}
+.sim-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.sim-head h3{color:var(--purple-deep);font-size:20px}
+.sim-head .live-dot{margin-left:auto}
+.role-box{background:linear-gradient(135deg,var(--lavender-soft),var(--pink-soft));border:1px dashed var(--purple);border-radius:16px;padding:15px 18px;margin:14px 0;font-size:13.5px;line-height:1.65;color:#4C1D95}
+.role-box b{color:var(--purple-deep)}
+.m1-layout{display:grid;grid-template-columns:1fr 1.15fr;gap:18px}
+.m1-tests{display:flex;flex-direction:column;gap:8px}
+.m1-test{display:flex;align-items:center;gap:11px;background:#FAF8FF;border:1px solid var(--border);border-radius:13px;padding:11px 13px;font-size:13px;font-weight:600;color:#5B4A7A;cursor:pointer;transition:all .3s;text-align:left;font-family:inherit;width:100%}
+.m1-test:hover{transform:translateX(4px);border-color:var(--purple)}
+.m1-test .st{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;background:#fff;border:2px solid var(--lavender-mid);color:var(--muted);transition:all .3s}
+.m1-test.active{border-color:var(--purple);background:var(--lavender-soft);box-shadow:var(--shadow-sm)}
+.m1-test.active .st{border-color:var(--purple);color:var(--purple-dark);animation:spinFast .8s linear infinite}
+.m1-test.pass{border-color:#A7F3D0;background:var(--mint-soft)}
+.m1-test.pass .st{background:#10B981;border-color:#10B981;color:#fff}
+.m1-test.fail{border-color:#FECDD3;background:var(--rose-soft)}
+.m1-test.fail .st{background:#F43F5E;border-color:#F43F5E;color:#fff}
+.m1-test small{margin-left:auto;font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase}
+.m1-stage{background:#1E1B2E;border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.m1-phone{background:linear-gradient(180deg,#FAF8FF,#F5F3FF);border-radius:16px;padding:16px;min-height:170px;display:flex;flex-direction:column;gap:9px;justify-content:center}
+.m1-phone .mp-title{font-size:14px;font-weight:900;color:var(--purple-deep)}
+.m1-phone .mp-row{background:#fff;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:12px;color:#5B4A7A}
+.m1-phone .mp-btn{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;border-radius:10px;padding:10px;text-align:center;font-size:12px;font-weight:800}
+.m1-log{background:#0F0A24;border-radius:14px;padding:14px;height:150px;overflow-y:auto;font-family:Consolas,'Courier New',monospace;font-size:11.5px;line-height:1.7;color:#C4B5FD}
+.m1-log .ok{color:#6EE7B7}.m1-log .err{color:#FDA4AF}.m1-log .info{color:#93C5FD}.m1-log .dim{color:#7E7390}
+.m1-controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.m1-result{margin-left:auto;font-weight:900;font-size:14px;padding:9px 18px;border-radius:99px;background:var(--lavender-soft);color:var(--purple-deep);transition:all .3s}
+.m1-result.pass{background:var(--mint-soft);color:#047857}
+.m1-result.fail{background:var(--rose-soft);color:#BE123C}
+.m2-controls{display:flex;gap:14px;flex-wrap:wrap;align-items:center;background:#FAF8FF;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px}
+.vu-wrap{flex:1;min-width:220px}
+.vu-wrap label{font-size:12px;font-weight:800;color:var(--purple-deep);display:flex;justify-content:space-between;margin-bottom:7px}
+.vu-wrap label b{font-size:15px;color:var(--purple-dark)}
+input[type=range]{width:100%;height:10px;-webkit-appearance:none;appearance:none;background:linear-gradient(90deg,var(--purple),#DB2777);border-radius:99px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:4px solid var(--purple-dark);box-shadow:0 4px 12px rgba(124,58,237,.4);cursor:grab}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:4px solid var(--purple-dark);cursor:grab}
+.m2-metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:12px}
+.thread-box{background:#FAF8FF;border:1px solid var(--border);border-radius:16px;padding:16px;margin-top:14px}
+.thread-dots{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;min-height:52px}
+.thread-dot{width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple-dark));box-shadow:0 2px 6px rgba(124,58,237,.35);animation:dotPop .4s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes dotPop{from{transform:scale(0)}to{transform:scale(1)}}
+.api-hits{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.api-hit{background:#fff;border:1px solid var(--border);border-radius:13px;padding:12px;text-align:center}
+.api-hit code{display:block;background:var(--lavender-soft);color:var(--purple-deep);font-weight:800;padding:4px 6px;border-radius:7px;font-size:11px;font-family:Consolas,monospace;margin-bottom:6px}
+.api-hit b{font-size:18px;color:var(--purple-dark);font-variant-numeric:tabular-nums}
+.api-hit span{display:block;font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase}
+@media(max-width:700px){.api-hits{grid-template-columns:repeat(2,1fr)}}
+.m2-chart-wrap{background:#FAF8FF;border:1px solid var(--border);border-radius:16px;padding:14px}
+.m2-chart-wrap canvas{width:100%;height:200px;display:block}
+@media(max-width:900px){.m1-layout{grid-template-columns:1fr}.m2-metrics{grid-template-columns:repeat(2,1fr)}}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:1020px){
+  .hero{grid-template-columns:1fr}
+  .sim-grid{grid-template-columns:1fr}
+  .grid3,.sev-grid{grid-template-columns:repeat(2,1fr)}
+  .team-grid{grid-template-columns:1fr}
+  .fc1{left:-8px}.fc2{right:-8px}.fc3{left:-8px}.fc4{right:-8px}
+}
+@media(max-width:640px){
+  .nav-links{display:none;position:absolute;top:74px;right:16px;flex-direction:column;background:#fff;border:1px solid var(--border);border-radius:18px;padding:12px;box-shadow:var(--shadow);min-width:190px}
+  .nav-links.open{display:flex}
+  .burger{display:block}
+  .grid2,.grid3,.sev-grid,.dash-metrics{grid-template-columns:1fr 1fr}
+  .scene{width:300px;height:480px}
+  .phone3d{width:200px;height:420px;margin:-210px 0 0 -100px}
+  .orbit-ring{width:360px;height:360px;margin:-180px 0 0 -180px}
+  .bar-row{grid-template-columns:100px 1fr 50px}
+}
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND FLOW -->
+<div class="bg-flow">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+  <div class="bg-grid"></div>
+  <svg class="bg-wave" viewBox="0 0 2880 180" preserveAspectRatio="none">
+    <path d="M0,90 C240,30 480,150 720,90 C960,30 1200,150 1440,90 C1680,30 1920,150 2160,90 C2400,30 2640,150 2880,90 L2880,180 L0,180 Z" fill="rgba(167,139,250,.14)"/>
+    <path d="M0,110 C240,60 480,160 720,110 C960,60 1200,160 1440,110 C1680,60 1920,160 2160,110 C2400,60 2640,160 2880,110 L2880,180 L0,180 Z" fill="rgba(249,168,212,.12)"/>
+  </svg>
+  <div id="particles"></div>
+</div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-rings"><span></span><span></span><span></span><div class="loader-core">QA</div></div>
+  <div class="loader-title">FoodQA Lab</div>
+  <div class="loader-bar"><i></i></div>
+  <div class="loader-sub">Loading Quality Experience</div>
+</div>
+
+<!-- PAGE CHANGE CURTAIN -->
+<div id="curtain"><div class="panel"></div><div class="panel"></div><div class="panel"></div><div class="panel"></div><div class="panel"></div></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="goPage('home')">
+    <div class="logo-badge">🍔</div>
+    <div class="logo-text"><b>FoodQA Lab</b><small>Quality Assessment</small></div>
+  </div>
+  <div class="nav-links" id="navLinks">
+    <button class="nav-btn active" data-page="home" onclick="goPage('home')">🏠 Home</button>
+    <button class="nav-btn" data-page="simulation" onclick="goPage('simulation')">▶ Simulation</button>
+    <button class="nav-btn" data-page="modules" onclick="goPage('modules')">🧩 Modules</button>
+    <button class="nav-btn" data-page="results" onclick="goPage('results')">📊 Results</button>
+    <button class="nav-btn" data-page="about" onclick="goPage('about')">👥 About</button>
+  </div>
+  <button class="burger" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+</nav>
+
+<main>
+<!-- ================= HOME ================= -->
+<section class="page active" id="page-home">
+  <div class="hero">
+    <div>
+      <span class="tag tag-purple">✦ Software Quality Assurance Project</span>
+      <h1>Automated Food Delivery <span class="grad">Quality Assessment</span></h1>
+      <p class="lead">A unified QA framework combining <b>Appium + TestNG</b> functional testing, <b>Apache JMeter</b> performance evaluation, and <b>defect &amp; SLA reporting</b> — validated live in a 3D interactive simulation.</p>
+      <div class="hero-btns">
+        <button class="btn btn-primary" onclick="goPage('simulation')">▶ Run Live Simulation <span class="arr">→</span></button>
+        <button class="btn btn-ghost" onclick="goPage('modules')">🧩 Explore Modules</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><b data-count="6">0</b><span>Ordering Workflows</span></div>
+        <div class="hstat"><b data-count="5">0</b><span>Load Profiles</span></div>
+        <div class="hstat"><b data-count="4">0</b><span>SLA Metrics</span></div>
+        <div class="hstat"><b data-count="98">0</b><span>% Pass Rate</span></div>
+      </div>
+    </div>
+    <div class="scene-wrap">
+      <div class="scene" id="scene">
+        <div class="orbit-ring"></div>
+        <div class="phone3d">
+          <div class="phone-screen">
+            <div class="phone-notch"></div>
+            <div class="phone-app">
+              <div class="pa-head"><b>🍔 FoodDash</b><span>📍 Chennai</span></div>
+              <div class="pa-search">🔍 Search biryani, pizza, dosa...</div>
+              <div class="pa-cats"><i class="on">🍕 Pizza</i><i>🍔 Burger</i><i>🍛 Biryani</i><i>🥗 Healthy</i></div>
+              <div class="pa-food"><div class="pa-thumb" style="background:#FDE68A">🍕</div><div><b>Cheese Burst Pizza</b><small>⭐ 4.8 • 25 min</small></div><em>₹299</em></div>
+              <div class="pa-food"><div class="pa-thumb" style="background:#FBCFE8">🍔</div><div><b>Smoky Burger</b><small>⭐ 4.6 • 20 min</small></div><em>₹199</em></div>
+              <div class="pa-food"><div class="pa-thumb" style="background:#A7F3D0">🍛</div><div><b>Chicken Biryani</b><small>⭐ 4.9 • 30 min</small></div><em>₹249</em></div>
+              <div class="pa-cart">🛒 View Cart • 3 Items</div>
+            </div>
+          </div>
+        </div>
+        <div class="float-card fc1"><b>98.2%</b><span>Test Pass Rate</span></div>
+        <div class="float-card fc2"><b>320 ms</b><span>p95 Latency</span></div>
+        <div class="float-card fc3"><b>1,240 req/s</b><span>Throughput</span></div>
+        <div class="float-card fc4"><b>0 Critical</b><span>Open Defects</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-head reveal">
+    <span class="tag tag-pink">Three Quality Pillars</span>
+    <h2>One Unified QA Framework</h2>
+    <p>Functional validation + performance evaluation + defect intelligence</p>
+  </div>
+  <div class="grid3">
+    <div class="card pillar reveal"><div class="ico" style="background:var(--lavender-soft)">🧪</div><h3>Functional Testing</h3><p>Appium + TestNG automates login, search, cart, checkout &amp; live tracking across positive and negative scenarios.</p></div>
+    <div class="card pillar reveal"><div class="ico" style="background:var(--pink-soft)">📈</div><h3>Performance Testing</h3><p>Apache JMeter CLI simulates 5 traffic profiles — Fixed, Ramp-up, Peak, Spike &amp; Stress — with realistic think-time.</p></div>
+    <div class="card pillar reveal"><div class="ico" style="background:var(--mint-soft)">🛡️</div><h3>Defect &amp; SLA Reporting</h3><p>Auto-classified defects by severity with consolidated HTML/CSV reports and targeted fix recommendations.</p></div>
+  </div>
+
+  <div class="flow-strip reveal">
+    <span class="step">1. Select Suite</span><span class="arr">→</span>
+    <span class="step">2. Run Appium + JMeter</span><span class="arr">→</span>
+    <span class="step">3. Auto-Classify Defects</span><span class="arr">→</span>
+    <span class="step">4. Generate SLA Reports</span>
+  </div>
+</section>
+
+<!-- ================= SIMULATION ================= -->
+<section class="page" id="page-simulation">
+  <div class="sec-head">
+    <span class="tag tag-mint"><span class="live-dot"><i></i> Live</span></span>
+    <h2>Live Animated Simulation</h2>
+    <p>Left: customer ordering flow &nbsp;•&nbsp; Right: QA test execution dashboard</p>
+  </div>
+
+  <div class="sim-grid">
+    <!-- LEFT: PHONE ORDERING SIM -->
+    <div class="sim-panel">
+      <h3>📱 Food Delivery App <span class="live-dot" style="margin-left:auto"><i></i> Running</span></h3>
+      <p class="sub">End-to-end customer journey — auto-playing</p>
+      <div class="sim-phone">
+        <div class="sim-screen">
+          <div class="phone-notch"></div>
+          <div class="sim-body" id="simBody"></div>
+        </div>
+      </div>
+      <div class="step-label" id="simStepLabel">Step 1 of 5 — Login</div>
+      <div class="sim-progress" style="margin:10px 0"><i id="simProgress"></i></div>
+      <div class="sim-controls">
+        <button class="btn btn-primary btn-sm" id="simPlayBtn" onclick="toggleSim()">⏸ Pause</button>
+        <button class="btn btn-ghost btn-sm" onclick="restartSim()">↻ Restart</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: QA DASHBOARD -->
+    <div class="sim-panel">
+      <h3>🧪 QA Execution Dashboard <span class="live-dot" style="margin-left:auto"><i></i> Live</span></h3>
+      <p class="sub">Appium + TestNG tests • JMeter load • defect detection</p>
+
+      <div class="dash-metrics">
+        <div class="metric"><b id="mAvg">0</b><span>Avg Response</span><small>ms</small></div>
+        <div class="metric"><b id="mP95">0</b><span>p95 Latency</span><small>ms</small></div>
+        <div class="metric"><b id="mThr">0</b><span>Throughput</span><small>req/s</small></div>
+        <div class="metric"><b id="mErr">0</b><span>Error Rate</span><small>%</small></div>
+      </div>
+
+      <div class="chart-wrap">
+        <div class="workload-btns" id="wlBtns">
+          <button class="wl-btn on" data-wl="Fixed">Fixed • 50 VU</button>
+          <button class="wl-btn" data-wl="Ramp-up">Ramp-up • 100 VU</button>
+          <button class="wl-btn" data-wl="Peak">Peak • 180 VU</button>
+          <button class="wl-btn" data-wl="Spike">Spike • 260 VU</button>
+          <button class="wl-btn" data-wl="Stress">Stress • 320 VU</button>
+        </div>
+        <canvas id="jmeterChart" width="720" height="190"></canvas>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px;font-weight:700">
+          <span>Response Time (ms) over time</span><span id="chartInfo">Profile: Fixed • 50 VU</span>
+        </div>
+      </div>
+
+      <h3 style="font-size:15px;margin-bottom:10px">✅ Appium + TestNG Test Suite</h3>
+      <div class="test-list" id="testList"></div>
+      <div class="sim-progress" style="margin-bottom:16px"><i id="testProgress"></i></div>
+
+      <h3 style="font-size:15px;margin-bottom:10px">🐛 Live Defect Feed</h3>
+      <div class="defect-feed" id="defectFeed"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MODULES ================= -->
+<section class="page" id="page-modules">
+  <div class="sec-head">
+    <span class="tag tag-purple">System Design</span>
+    <h2>Project Modules</h2>
+    <p>Two modules working together in one closed-loop QA pipeline</p>
+  </div>
+
+  <div class="module-hero reveal">
+    <span class="tag tag-purple">Module 1</span>
+    <h3>Automated Functional Testing &amp; Validation</h3>
+    <p>Appium (UIAutomator2) with Java &amp; TestNG using the Page Object Model verifies the complete ordering journey against a payment sandbox — including negative scenarios like declined cards, expired coupons and mid-payment network drops.</p>
+    <div class="tool-stack"><span>Appium UIAutomator2</span><span>Java</span><span>TestNG</span><span>Page Object Model</span><span>Payment Sandbox</span></div>
+    <button class="btn btn-primary btn-sm" style="margin-top:16px" onclick="document.getElementById('m1Sim').scrollIntoView({behavior:'smooth',block:'start'})">▶ Jump to Live Simulator Below ↓</button>
+  </div>
+  <div class="steps" style="margin-bottom:26px">
+    <div class="step-card reveal"><div class="step-num">1</div><div><h4>Authentication &amp; Discovery</h4><p>Automates user registration, login/OTP validation, invalid credential handling, restaurant search, cuisine filters, and menu browsing.</p></div></div>
+    <div class="step-card reveal"><div class="step-num">2</div><div><h4>Dynamic Cart &amp; Coupon Rules</h4><p>Verifies item add/remove, portion &amp; add-on customization, quantity updates, tax/subtotal math, and valid/expired promo coupon codes.</p></div></div>
+    <div class="step-card reveal"><div class="step-num">3</div><div><h4>Checkout &amp; Payment Sandbox</h4><p>Tests valid payments, declined cards, simulated mid-payment network interruptions, and idempotent duplicate-order prevention.</p></div></div>
+    <div class="step-card reveal"><div class="step-num">4</div><div><h4>Order Lifecycle &amp; Tracking</h4><p>Validates order confirmation, live status transitions (Placed → Preparing → Out for Delivery → Delivered), and cancellation rules.</p></div></div>
+    <div class="step-card reveal"><div class="step-num">5</div><div><h4>TestNG Assertions &amp; Bug Logs</h4><p>Runs positive &amp; negative suites, compares actual vs. expected states, captures failure screenshots/logs, and exports TestNG reports.</p></div></div>
+  </div>
+
+  <!-- MODULE 1 LIVE SIMULATOR -->
+  <div class="simulator-box reveal" id="m1Sim">
+    <div class="sim-head">
+      <span class="tag tag-purple">🧪 Module 1 • Live Simulator</span>
+      <h3>Appium + TestNG — Functional Test Runner</h3>
+      <span class="live-dot"><i></i> Interactive</span>
+    </div>
+    <div class="role-box">
+      <b>🎯 Role of Module 1 (Explain this in viva):</b> Module 1 checks <b>whether the app works correctly</b> — like a real user tapping through login, search, cart, coupon, checkout &amp; tracking. Appium drives the phone UI, TestNG runs the test cases and asserts <b>actual vs expected</b> results. It catches functional bugs (wrong price, expired coupon accepted, duplicate orders) <b>before</b> they reach users. Click <b>▶ Run All</b> or tap any test to watch it execute step-by-step!
+    </div>
+    <div class="m1-layout">
+      <div>
+        <h4 style="color:var(--purple-deep);font-size:14px;margin-bottom:10px">📋 Test Cases (click to run one)</h4>
+        <div class="m1-tests" id="m1Tests"></div>
+      </div>
+      <div class="m1-stage">
+        <div class="m1-phone" id="m1Phone">
+          <div class="mp-title">📱 App Screen — Ready</div>
+          <div class="mp-row">Press <b>▶ Run All Tests</b> to start the Appium session...</div>
+          <div class="mp-btn">Appium Session: Idle</div>
+        </div>
+        <div class="m1-log" id="m1Log"><div class="dim">[Appium] Waiting to start... Click "Run All Tests" ▶</div></div>
+      </div>
+    </div>
+    <div class="m1-controls">
+      <button class="btn btn-primary btn-sm" id="m1RunBtn" onclick="m1RunAll()">▶ Run All Tests</button>
+      <button class="btn btn-ghost btn-sm" onclick="m1Reset()">↻ Reset</button>
+      <div class="sim-progress" style="flex:1;min-width:120px"><i id="m1Progress"></i></div>
+      <span class="m1-result" id="m1Result">0 / 8 Passed</span>
+    </div>
+  </div>
+
+  <div class="module-hero reveal">
+    <span class="tag tag-pink">Module 2</span>
+    <h3>Performance, Load &amp; Stress Testing</h3>
+    <p>Apache JMeter in non-GUI CLI mode executes five realistic workload profiles against the food delivery APIs, recording SLA metrics to expose latency spikes and concurrency ceilings before peak-hour rushes.</p>
+    <div class="tool-stack"><span>Apache JMeter CLI</span><span>Non-GUI Mode</span><span>CSV Data</span><span>.jtl Logs</span><span>HTML Dashboard</span></div>
+    <button class="btn btn-pink btn-sm" style="margin-top:16px" onclick="document.getElementById('m2Sim').scrollIntoView({behavior:'smooth',block:'start'})">▶ Jump to Live Simulator Below ↓</button>
+  </div>
+  <div class="grid2">
+    <div class="card reveal">
+      <h3 style="color:var(--purple-deep);margin-bottom:14px">🎯 Target Food Delivery APIs</h3>
+      <div class="api-list">
+        <div class="api-item"><span class="m m-get">GET</span><code>/restaurants</code> Search &amp; filters</div>
+        <div class="api-item"><span class="m m-get">GET</span><code>/menu</code> Item &amp; add-on retrieval</div>
+        <div class="api-item"><span class="m m-post">POST</span><code>/cart</code> Dynamic price &amp; coupons</div>
+        <div class="api-item"><span class="m m-post">POST</span><code>/orders</code> Checkout &amp; confirmation</div>
+      </div>
+    </div>
+    <div class="card reveal">
+      <h3 style="color:var(--purple-deep);margin-bottom:14px">⚙️ JMeter CLI Execution Setup</h3>
+      <div class="api-list">
+        <div class="api-item">🖥️ Non-GUI CLI mode for accurate load</div>
+        <div class="api-item">📄 Parameterized CSV user &amp; order data</div>
+        <div class="api-item">⏱️ Realistic user think-time timers</div>
+        <div class="api-item">📊 Automated .jtl logs &amp; HTML dashboard</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 2 LIVE SIMULATOR -->
+  <div class="simulator-box reveal" id="m2Sim">
+    <div class="sim-head">
+      <span class="tag tag-pink">📈 Module 2 • Live Simulator</span>
+      <h3>Apache JMeter — Load &amp; Stress Test Runner</h3>
+      <span class="live-dot"><i></i> Interactive</span>
+    </div>
+    <div class="role-box">
+      <b>🎯 Role of Module 2 (Explain this in viva):</b> Module 2 checks <b>whether the app survives heavy traffic</b> — like lunch/dinner rush hours. JMeter creates hundreds of <b>virtual users (VU)</b> hitting the APIs at once and measures <b>response time, p95 latency, throughput &amp; error rate</b>. It finds the <b>breaking point</b> (e.g. Spike at 260 VU) so developers can fix bottlenecks <b>before</b> real users face slow orders. Drag the <b>Virtual Users slider</b> and press <b>▶ Start Load Test</b>!
+    </div>
+    <div class="m2-controls">
+      <div class="vu-wrap">
+        <label><span>👥 Virtual Users (VU)</span><b id="vuVal">100 VU</b></label>
+        <input type="range" id="vuSlider" min="10" max="400" value="100" step="10" oninput="m2SetVU(this.value)">
+      </div>
+      <div class="workload-btns" style="margin:0">
+        <button class="wl-btn" data-m2wl="Fixed" onclick="m2SetProfile('Fixed',this)">Fixed</button>
+        <button class="wl-btn" data-m2wl="Ramp-up" onclick="m2SetProfile('Ramp-up',this)">Ramp-up</button>
+        <button class="wl-btn" data-m2wl="Peak" onclick="m2SetProfile('Peak',this)">Peak</button>
+        <button class="wl-btn" data-m2wl="Spike" onclick="m2SetProfile('Spike',this)">Spike</button>
+        <button class="wl-btn" data-m2wl="Stress" onclick="m2SetProfile('Stress',this)">Stress</button>
+      </div>
+      <button class="btn btn-primary btn-sm" id="m2RunBtn" onclick="m2Toggle()">▶ Start Load Test</button>
+    </div>
+    <div class="m2-chart-wrap">
+      <canvas id="m2Chart" width="900" height="200"></canvas>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px;font-weight:700;flex-wrap:wrap;gap:6px">
+        <span>🟣 Response Time (ms) &nbsp; 🔴 SLA Limit 1000 ms</span>
+        <span id="m2Info">Idle — press Start Load Test</span>
+      </div>
+    </div>
+    <div class="m2-metrics">
+      <div class="metric"><b id="m2Active">0</b><span>Active VU</span><small>users</small></div>
+      <div class="metric"><b id="m2Avg">0</b><span>Avg Response</span><small>ms</small></div>
+      <div class="metric"><b id="m2P95">0</b><span>p95 Latency</span><small>ms</small></div>
+      <div class="metric"><b id="m2Thr">0</b><span>Throughput</span><small>req/s</small></div>
+      <div class="metric"><b id="m2Err">0</b><span>Error Rate</span><small>%</small></div>
+    </div>
+    <div class="thread-box">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <b style="color:var(--purple-deep);font-size:14px">👥 Virtual User Thread Group</b>
+        <span style="font-size:12px;color:var(--muted)">Each dot = 1 virtual user hitting the APIs right now</span>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="m2AutoTour()">🔄 Auto-Tour All 5 Profiles</button>
+      </div>
+      <div class="thread-dots" id="threadDots"></div>
+      <div class="api-hits">
+        <div class="api-hit"><code>GET /restaurants</code><b id="hitRest">0</b><span>Hits</span></div>
+        <div class="api-hit"><code>GET /menu</code><b id="hitMenu">0</b><span>Hits</span></div>
+        <div class="api-hit"><code>POST /cart</code><b id="hitCart">0</b><span>Hits</span></div>
+        <div class="api-hit"><code>POST /orders</code><b id="hitOrders">0</b><span>Hits</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESULTS ================= -->
+<section class="page" id="page-results">
+  <div class="sec-head">
+    <span class="tag tag-amber">Quality Intelligence</span>
+    <h2>Defect Detection &amp; Evaluation</h2>
+    <p>Sandbox prototype results across 5 workloads</p>
+  </div>
+
+  <div class="sev-grid" style="margin-bottom:22px">
+    <div class="sev-card sev-crit reveal"><b>2</b><h4>CRITICAL</h4><p>Duplicate order placed on network retry; payment gateway 500 error.</p></div>
+    <div class="sev-card sev-high reveal"><b>4</b><h4>HIGH</h4><p>POST /orders p95 latency &gt; 1.3 s under Spike load; expired coupon accepted.</p></div>
+    <div class="sev-card sev-med reveal"><b>6</b><h4>MEDIUM</h4><p>Cart tax rounding mismatch on add-on customization; slow menu filter.</p></div>
+    <div class="sev-card sev-low reveal"><b>9</b><h4>LOW</h4><p>Minor validation toast truncation &amp; non-blocking UI alignment issue.</p></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card reveal">
+      <h3 style="color:var(--purple-deep);margin-bottom:18px">📊 Workload Performance (p95 Latency)</h3>
+      <div class="bar-row"><span>Fixed (50 VU)</span><div class="bar-track"><div class="bar-fill" data-w="18"></div></div><b>180 ms</b></div>
+      <div class="bar-row"><span>Ramp-up (100 VU)</span><div class="bar-track"><div class="bar-fill" data-w="32"></div></div><b>320 ms</b></div>
+      <div class="bar-row"><span>Peak (180 VU)</span><div class="bar-track"><div class="bar-fill" data-w="58"></div></div><b>580 ms</b></div>
+      <div class="bar-row"><span>Spike (260 VU)</span><div class="bar-track"><div class="bar-fill" data-w="100"></div></div><b>1,300 ms</b></div>
+      <div class="bar-row"><span>Stress (320 VU)</span><div class="bar-track"><div class="bar-fill" data-w="88"></div></div><b>1,150 ms</b></div>
+      <p style="font-size:12.5px;color:var(--muted);margin-top:8px">⚠️ Bottleneck flagged: p95 breach (&gt;1000 ms) during Spike &amp; Stress tests.</p>
+    </div>
+    <div class="card reveal">
+      <h3 style="color:var(--purple-deep);margin-bottom:14px">✅ Consolidated Reports &amp; Fixes</h3>
+      <div class="fix-list">
+        <div class="fix-item"><span class="fi">🧾</span><span><b>Functional Suite:</b> Pass/Fail rate tracked across positive &amp; negative workflows with step-level trace logs.</span></div>
+        <div class="fix-item"><span class="fi">🔑</span><span><b>Idempotency Keys:</b> Prevent duplicate orders on checkout network retries.</span></div>
+        <div class="fix-item"><span class="fi">⚡</span><span><b>Redis Caching:</b> Cache menu data to cut API latency under load.</span></div>
+        <div class="fix-item"><span class="fi">🗄️</span><span><b>DB Connection Pooling:</b> Raise concurrent user capacity at peak hours.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card reveal" style="margin-top:20px">
+    <h3 style="color:var(--purple-deep);margin-bottom:12px">🏁 Conclusion</h3>
+    <p style="color:#5B4A7A;line-height:1.7;font-size:14.5px">The unified framework eliminates fragmented manual testing by combining UI validation, load evaluation, and defect tracking into a single repeatable pipeline. Appium + TestNG suites safeguard authentication, cart calculations, coupon rules, payment recovery, and live tracking — while five JMeter workload profiles expose latency spikes and concurrency ceilings before real meal-hour rushes hit production. Consolidated reports pairing pass/fail logs, p95 latency, throughput, and severity-ranked defects empower developers to fix high-impact bottlenecks first.</p>
+    <div class="tool-stack" style="margin-top:16px"><span>🔗 CI/CD Integration</span><span>🤖 AI Self-Healing Locators</span><span>📱 Real Device Cloud</span><span>🔒 Security &amp; API Fuzzing</span></div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section class="page" id="page-about">
+  <div class="sec-head">
+    <span class="tag tag-purple">Our Team</span>
+    <h2>About the Project</h2>
+    <p>SIMATS Engineering, Saveetha Institute of Medical and Technical Sciences (Deemed to be University), Chennai</p>
+  </div>
+
+  <div class="team-grid" style="margin-bottom:24px">
+    <div class="card team-card reveal"><div class="avatar" style="background:linear-gradient(135deg,#A78BFA,#7C3AED)">GC</div><h3>G. Chakradhar</h3><div class="role">Presenter • 192311439</div><p>Functional automation with Appium + TestNG and end-to-end workflow validation.</p></div>
+    <div class="card team-card reveal"><div class="avatar" style="background:linear-gradient(135deg,#F9A8D4,#EC4899)">GL</div><h3>G. A. Lohitaksha</h3><div class="role">Presenter • 1911260101</div><p>Performance evaluation with Apache JMeter and defect &amp; SLA reporting.</p></div>
+    <div class="card team-card reveal"><div class="avatar" style="background:linear-gradient(135deg,#34D399,#059669)">PN</div><h3>Dr. Poongavanam N</h3><div class="role">Guide • SIMATS Engineering</div><p>Project guidance and quality assurance framework supervision.</p></div>
+  </div>
+
+  <div class="card reveal" style="margin-bottom:22px">
+    <h3 style="color:var(--purple-deep);margin-bottom:14px">📚 References</h3>
+    <div class="ref-list">
+      <div class="ref-item"><b>[1]</b> C.-I. Ho and Y.-T. Huang, "Reconceptualizing Service Quality in Online Food Delivery," <i>Tourism and Hospitality</i>, 2026.</div>
+      <div class="ref-item"><b>[2]</b> S. Khlamov et al., "Comparative Analysis of k6, JMeter and Postman Test Tools," <i>CEUR Workshop Proceedings</i>, 2026.</div>
+      <div class="ref-item"><b>[3]</b> M. F. Shorbaji et al., "AI-Enabled Mobile Food-Ordering Apps and Customer Experience," <i>JTAER</i>, 2025.</div>
+      <div class="ref-item"><b>[4]</b> I. Hunko, "Optimize Mobile App Testing Using Machine Learning," <i>Asian J. of Research in Computer Science</i>, 2025.</div>
+      <div class="ref-item"><b>[5]</b> S. Yu et al., "Practical, Automated Scenario-Based Mobile App Testing," <i>IEEE TSE</i>, 2024.</div>
+      <div class="ref-item"><b>[6]</b> A. S. Abdelfattah et al., "Test Coverage in Microservice Systems," <i>Electronics</i>, 2024.</div>
+    </div>
+  </div>
+
+  <div class="thanks reveal">
+    <h2>🙏 Thank You</h2>
+    <p>Questions &amp; Discussion — Automated Food Delivery Application Quality Assessment</p>
+    <button class="btn btn-primary" style="margin-top:20px" onclick="goPage('simulation')">▶ Replay the Simulation</button>
+  </div>
+</section>
+</main>
+
+<footer>
+  <b>FoodQA Lab</b> • Automated Food Delivery Application Quality Assessment • Appium + TestNG • Apache JMeter CLI • SIMATS Engineering, Chennai
+</footer>
+
+<div id="toast">✨ Page loaded</div>
+
+<script>
+/* ================= LOADER ================= */
+window.addEventListener('load',()=>{
+  setTimeout(()=>{document.getElementById('loader').classList.add('done');showToast('✨ Welcome to FoodQA Lab');},1900);
+});
+setTimeout(()=>{document.getElementById('loader').classList.add('done');},3200); /* fallback */
+
+/* ================= PARTICLES ================= */
+(function(){
+  const box=document.getElementById('particles');
+  for(let i=0;i<26;i++){
+    const p=document.createElement('div');p.className='particle';
+    const s=3+Math.random()*6;
+    p.style.width=s+'px';p.style.height=s+'px';
+    p.style.left=(Math.random()*100)+'%';
+    p.style.animationDuration=(10+Math.random()*14)+'s';
+    p.style.animationDelay=(-Math.random()*16)+'s';
+    if(Math.random()>.6)p.style.background='#F9A8D4';
+    if(Math.random()>.8)p.style.background='#6EE7B7';
+    box.appendChild(p);
+  }
+})();
+
+/* ================= TOAST ================= */
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+/* ================= BUTTON RIPPLE ================= */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.btn,.nav-btn,.wl-btn');
+  if(!b)return;
+  const r=b.getBoundingClientRect(),d=Math.max(r.width,r.height);
+  const rip=document.createElement('span');rip.className='ripple'+(b.classList.contains('btn-primary')||b.classList.contains('nav-btn')?'':' dark');
+  rip.style.width=rip.style.height=d+'px';
+  rip.style.left=(e.clientX-r.left-d/2)+'px';rip.style.top=(e.clientY-r.top-d/2)+'px';
+  b.appendChild(rip);setTimeout(()=>rip.remove(),650);
+});
+
+/* ================= PAGE NAVIGATION — 3D FLIP ================= */
+let currentPage='home',navigating=false;
+function goPage(name){
+  if(name===currentPage||navigating)return;
+  navigating=true;
+  document.getElementById('navLinks').classList.remove('open');
+  const old=document.getElementById('page-'+currentPage);
+  const neu=document.getElementById('page-'+name);
+  /* Flip OUT the old page */
+  old.classList.add('page-leaving');
+  setTimeout(()=>{
+    old.classList.remove('active','page-leaving');
+    /* Flip IN the new page */
+    neu.classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+    currentPage=name;window.scrollTo({top:0,behavior:'instant'});
+    initReveals(neu);animateCounters(neu);animateBars(neu);
+    if(name==='simulation')startDashboard();
+    showToast('✨ '+name.charAt(0).toUpperCase()+name.slice(1)+' page');
+    setTimeout(()=>{navigating=false},720);
+  },320);
+}
+
+/* ================= SCROLL REVEAL ================= */
+let revealObs;
+function initReveals(scope){
+  if(revealObs)revealObs.disconnect();
+  revealObs=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting)en.target.classList.add('in')}),{threshold:.12});
+  (scope||document).querySelectorAll('.reveal').forEach(el=>{el.classList.remove('in');revealObs.observe(el)});
+}
+
+/* ================= COUNTERS ================= */
+function animateCounters(scope){
+  (scope||document).querySelectorAll('[data-count]').forEach(el=>{
+    const target=+el.dataset.count;let cur=0;const step=Math.max(1,Math.round(target/40));
+    const iv=setInterval(()=>{cur+=step;if(cur>=target){cur=target;clearInterval(iv)}el.textContent=cur+(target===98?'':'');},30);
+  });
+}
+
+/* ================= RESULT BARS ================= */
+function animateBars(scope){
+  (scope||document).querySelectorAll('.bar-fill').forEach(b=>{b.style.width='0';setTimeout(()=>b.style.width=b.dataset.w+'%',150)});
+}
+
+/* ================= 3D MOUSE TILT ================= */
+(function(){
+  const scene=document.getElementById('scene');if(!scene)return;
+  const wrap=scene.closest('.scene-wrap');
+  wrap.addEventListener('mousemove',e=>{
+    const r=wrap.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+    scene.style.transform=`rotateY(${x*22}deg) rotateX(${-y*16}deg)`;
+  });
+  wrap.addEventListener('mouseleave',()=>{scene.style.transform='rotateY(0) rotateX(0)'});
+})();
+
+/* ================= PHONE ORDERING SIMULATION ================= */
+const simSteps=[
+  {label:'Step 1 of 5 — Login',html:`
+    <div class="sim-title">👋 Welcome Back!</div>
+    <div class="sim-input">📧 user@fooddash.in</div>
+    <div class="sim-input">🔒 ••••••••</div>
+    <div class="sim-btn">Login →</div>
+    <div class="sim-row"><span>New user?</span><b>Sign Up</b></div>
+    <div class="sim-row"><span>OTP verified ✓</span><b style="color:#047857">Appium: PASS</b></div>`},
+  {label:'Step 2 of 5 — Search & Menu',html:`
+    <div class="sim-title">🍔 What's Craving?</div>
+    <div class="sim-input">🔍 Search biryani...</div>
+    <div class="sim-food"><div class="pa-thumb" style="background:#A7F3D0">🍛</div><div><b>Chicken Biryani</b><small>⭐ 4.9 • 30 min</small></div><span class="price">₹249</span></div>
+    <div class="sim-food"><div class="pa-thumb" style="background:#FDE68A">🍕</div><div><b>Cheese Pizza</b><small>⭐ 4.8 • 25 min</small></div><span class="price">₹299</span></div>
+    <div class="sim-btn">Add to Cart 🛒</div>`},
+  {label:'Step 3 of 5 — Cart & Coupon',html:`
+    <div class="sim-title">🛒 Your Cart</div>
+    <div class="sim-row"><span>Chicken Biryani ×1</span><b>₹249</b></div>
+    <div class="sim-row"><span>Cheese Pizza ×1</span><b>₹299</b></div>
+    <div class="sim-row"><span>Coupon FOOD50</span><b style="color:#047857">−₹50 ✓</b></div>
+    <div class="sim-row"><span>Tax & Delivery</span><b>₹48</b></div>
+    <div class="sim-row sim-total"><span>Total</span><b>₹546</b></div>
+    <div class="sim-btn">Proceed to Checkout →</div>`},
+  {label:'Step 4 of 5 — Payment (Sandbox)',html:`
+    <div class="sim-title">💳 Secure Payment</div>
+    <div class="sim-input">💳 4242 4242 4242 4242</div>
+    <div class="sim-row"><span>Expiry / CVV</span><b>12/28 • ***</b></div>
+    <div class="sim-row"><span>Gateway</span><b style="color:#047857">Sandbox ✓</b></div>
+    <div class="sim-row"><span>Idempotency Key</span><b>ord_9f3k ✓</b></div>
+    <div class="sim-btn">Pay ₹546 🔒</div>
+    <div class="sim-row"><span>Duplicate order check</span><b style="color:#047857">Blocked ✓</b></div>`},
+  {label:'Step 5 of 5 — Live Tracking',html:`
+    <div class="sim-title">🛵 Order #4821 • Live</div>
+    <div class="sim-track"><div class="road"></div><div class="fill" id="trackFill"></div><span class="pin" style="left:6%;top:18%">🏠</span><span class="pin" style="right:6%;top:18%">🍽️</span><span class="bike" id="trackBike" style="left:8%">🛵</span></div>
+    <div class="sim-status" id="orderStatus"><span>Placed</span><span>Preparing</span><span>On the Way</span><span>Delivered</span></div>
+    <div class="sim-row"><span>ETA</span><b>18 min</b></div>`}
+];
+let simIdx=0,simPlaying=true,simTimer=null;
+function renderSim(){
+  const body=document.getElementById('simBody');if(!body)return;
+  body.innerHTML=simSteps[simIdx].html;
+  document.getElementById('simStepLabel').textContent=simSteps[simIdx].label;
+  document.getElementById('simProgress').style.width=((simIdx+1)/simSteps.length*100)+'%';
+  if(simIdx===4){
+    setTimeout(()=>{
+      const fill=document.getElementById('trackFill'),bike=document.getElementById('trackBike'),sts=document.querySelectorAll('#orderStatus span');
+      if(!fill)return;
+      let p=8;const iv=setInterval(()=>{p+=9;if(p>92)p=92;fill.style.width=p+'%';bike.style.left=p+'%';
+        sts.forEach((s,i)=>{s.className=p>25*i+10?(i===3&&p<90?'':'done'):(i===0?'on':'');if(i===3&&p>=90)s.className='on'});
+        if(p>=92)clearInterval(iv);},450);
+    },300);
+  }
+}
+function nextSim(){simIdx=(simIdx+1)%simSteps.length;renderSim()}
+function startSimTimer(){clearInterval(simTimer);simTimer=setInterval(()=>{if(simPlaying)nextSim()},3400)}
+function toggleSim(){simPlaying=!simPlaying;document.getElementById('simPlayBtn').textContent=simPlaying?'⏸ Pause':'▶ Play';showToast(simPlaying?'▶ Simulation resumed':'⏸ Simulation paused')}
+function restartSim(){simIdx=0;renderSim();showToast('↻ Simulation restarted')}
+renderSim();startSimTimer();
+
+/* ================= QA DASHBOARD ================= */
+const tests=[
+  'Login & OTP Validation','Restaurant Search & Filters','Menu Browsing & Add-ons',
+  'Cart Pricing & Tax Math','Coupon Valid / Expired','Checkout & Payment Sandbox',
+  'Duplicate Order Prevention','Live Order Tracking','Negative: Invalid Card','Negative: Network Drop'
+];
+const defects=[
+  {cls:'crit',sev:'CRITICAL',txt:'Duplicate order placed on network retry — fix: idempotency keys'},
+  {cls:'high',sev:'HIGH',txt:'POST /orders p95 > 1.3s under Spike (260 VU)'},
+  {cls:'high',sev:'HIGH',txt:'Expired coupon accepted at checkout'},
+  {cls:'med',sev:'MEDIUM',txt:'Cart tax rounding mismatch on add-on customization'},
+  {cls:'med',sev:'MEDIUM',txt:'Slow menu filter response on large catalogs'},
+  {cls:'low',sev:'LOW',txt:'Validation toast truncation on small screens'},
+  {cls:'crit',sev:'CRITICAL',txt:'Payment gateway 500 error on retry'},
+  {cls:'low',sev:'LOW',txt:'Non-blocking UI alignment issue in cart'}
+];
+const wlData={
+  'Fixed':{vu:50,base:150,amp:40,thr:320,err:.2},
+  'Ramp-up':{vu:100,base:220,amp:70,thr:640,err:.5},
+  'Peak':{vu:180,base:380,amp:120,thr:980,err:1.1},
+  'Spike':{vu:260,base:620,amp:320,thr:1240,err:2.4},
+  'Stress':{vu:320,base:560,amp:280,thr:1180,err:3.1}
+};
+let curWL='Fixed',dashStarted=false,chartData=[],chartTimer=null,metricTimer=null,testTimer=null,defectTimer=null,defectIdx=0;
+
+function buildTests(){
+  const list=document.getElementById('testList');list.innerHTML='';
+  tests.forEach((t,i)=>{
+    const d=document.createElement('div');d.className='test-item';d.id='test-'+i;
+    d.innerHTML=`<span class="st">${i+1}</span><span>${t}</span><span class="ms"></span>`;
+    list.appendChild(d);
+  });
+}
+function runTests(){
+  tests.forEach((t,i)=>{
+    const el=document.getElementById('test-'+i);if(!el)return;
+    el.className='test-item';el.querySelector('.st').textContent=i+1;el.querySelector('.ms').textContent='';
+  });
+  document.getElementById('testProgress').style.width='0%';
+  let i=0;
+  clearInterval(testTimer);
+  testTimer=setInterval(()=>{
+    if(i>0){const prev=document.getElementById('test-'+(i-1));prev.className='test-item pass';prev.querySelector('.st').textContent='✓';prev.querySelector('.ms').textContent=(120+Math.random()*380).toFixed(0)+' ms';}
+    if(i>=tests.length){clearInterval(testTimer);document.getElementById('testProgress').style.width='100%';showToast('✅ All 10 Appium tests passed!');return}
+    const el=document.getElementById('test-'+i);el.className='test-item running';el.querySelector('.st').textContent='◌';
+    document.getElementById('testProgress').style.width=(i/tests.length*100)+'%';
+    i++;
+  },900);
+}
+function pushDefect(){
+  const feed=document.getElementById('defectFeed');if(!feed)return;
+  const d=defects[defectIdx%defects.length];defectIdx++;
+  const el=document.createElement('div');el.className='defect-item '+d.cls;
+  el.innerHTML=`<b>[${d.sev}]</b><span>${d.txt}</span>`;
+  feed.prepend(el);
+  while(feed.children.length>4)feed.removeChild(feed.lastChild);
+}
+function drawChart(){
+  const c=document.getElementById('jmeterChart');if(!c)return;
+  const ctx=c.getContext('2d'),W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const max=Math.max(...chartData,800)*1.15;
+  /* grid */
+  ctx.strokeStyle='rgba(167,139,250,.18)';ctx.lineWidth=1;
+  for(let g=0;g<4;g++){const y=20+(H-50)*g/3;ctx.beginPath();ctx.moveTo(40,y);ctx.lineTo(W-10,y);ctx.stroke();
+    ctx.fillStyle='#7E7390';ctx.font='11px Segoe UI';ctx.fillText(Math.round(max*(1-g/3))+'',4,y+4);}
+  /* SLA line 1000ms */
+  const slaY=H-30-(1000/max)*(H-50);
+  if(slaY>15){ctx.strokeStyle='#F43F5E';ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(40,slaY);ctx.lineTo(W-10,slaY);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#F43F5E';ctx.font='bold 10px Segoe UI';ctx.fillText('SLA 1000ms',W-78,slaY-6);}
+  /* area + line */
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'rgba(167,139,250,.45)');grad.addColorStop(1,'rgba(167,139,250,0)');
+  ctx.beginPath();
+  chartData.forEach((v,i)=>{const x=40+(W-55)*i/(59);const y=H-30-(v/max)*(H-50);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+  ctx.strokeStyle='#7C3AED';ctx.lineWidth=2.5;ctx.stroke();
+  ctx.lineTo(40+(W-55)*(chartData.length-1)/59,H-30);ctx.lineTo(40,H-30);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  /* last point */
+  const lv=chartData[chartData.length-1],lx=40+(W-55)*(chartData.length-1)/59,ly=H-30-(lv/max)*(H-50);
+  ctx.beginPath();ctx.arc(lx,ly,5,0,7);ctx.fillStyle='#DB2777';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+}
+function tickChart(){
+  const d=wlData[curWL];
+  const v=d.base+Math.random()*d.amp+(Math.random()>.92?d.amp*.7:0);
+  chartData.push(v);if(chartData.length>60)chartData.shift();
+  drawChart();
+  /* metrics */
+  const avg=chartData.reduce((a,b)=>a+b,0)/chartData.length;
+  const sorted=[...chartData].sort((a,b)=>a-b);
+  const p95=sorted[Math.floor(sorted.length*.95)]||avg;
+  document.getElementById('mAvg').textContent=Math.round(avg);
+  document.getElementById('mP95').textContent=Math.round(p95);
+  document.getElementById('mThr').textContent=Math.round(d.thr*(0.9+Math.random()*.2));
+  document.getElementById('mErr').textContent=(d.err*(0.8+Math.random()*.5)).toFixed(1);
+  document.getElementById('chartInfo').textContent=`Profile: ${curWL} • ${d.vu} VU`;
+}
+function startDashboard(){
+  if(dashStarted)return;dashStarted=true;
+  buildTests();runTests();
+  chartData=Array.from({length:30},()=>wlData[curWL].base+Math.random()*wlData[curWL].amp);
+  drawChart();
+  chartTimer=setInterval(tickChart,700);
+  defectTimer=setInterval(pushDefect,3600);pushDefect();
+  setInterval(()=>{if(currentPage==='simulation')runTests()},16000);
+}
+document.getElementById('wlBtns').addEventListener('click',e=>{
+  const b=e.target.closest('.wl-btn');if(!b)return;
+  document.querySelectorAll('.wl-btn').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');curWL=b.dataset.wl;
+  chartData=Array.from({length:30},()=>wlData[curWL].base+Math.random()*wlData[curWL].amp);
+  drawChart();showToast('📈 Workload: '+curWL+' • '+wlData[curWL].vu+' VU');
+});
+
+/* ================= MODULE 1 SIMULATOR (Appium + TestNG) ================= */
+const m1Cases=[
+  {name:'Login & OTP Validation',icon:'🔐',screen:['<div class="mp-title">🔐 Login Screen</div>','<div class="mp-row">📧 Enter phone: 98765 43210</div>','<div class="mp-row">📩 OTP received: 4 8 2 9 → entered ✓</div>','<div class="mp-btn">Login → Home ✓</div>'],logs:['[Appium] Starting UIAutomator2 session...','[Appium] Finding element: //EditText[@text="Phone"]','[Appium] sendKeys("9876543210") ✓','[Appium] Clicking: //Button[@text="Send OTP"]','[TestNG] Assert: OTP screen displayed → PASS','[TestNG] Assert: Home screen loaded → PASS'],pass:true},
+  {name:'Restaurant Search & Filters',icon:'🔍',screen:['<div class="mp-title">🔍 Search Restaurants</div>','<div class="mp-row">🔎 Query: "biryani" → 12 results</div>','<div class="mp-row">🎛️ Filter: Rating 4+ • Under 30 min ✓</div>','<div class="mp-btn">Results: 8 restaurants ✓</div>'],logs:['[Appium] Finding element: //EditText[@hint="Search"]','[Appium] sendKeys("biryani") ✓','[Appium] Clicking filter chip: "4+ Rating"','[TestNG] Assert: result count > 0 → PASS','[TestNG] Assert: all ratings >= 4.0 → PASS'],pass:true},
+  {name:'Cart Pricing & Tax Math',icon:'🛒',screen:['<div class="mp-title">🛒 Cart</div>','<div class="mp-row">Biryani ₹249 + Pizza ₹299</div>','<div class="mp-row">Tax (5%): ₹27 • Delivery: ₹21</div>','<div class="mp-btn">Total: ₹596 ✓</div>'],logs:['[Appium] Clicking: //Button[@text="Add to Cart"] ×2','[Appium] Reading total: "₹596"','[TestNG] AssertEquals: expected 596, actual 596 → PASS','[TestNG] Assert: tax math correct → PASS'],pass:true},
+  {name:'Coupon Valid / Expired',icon:'🎟️',screen:['<div class="mp-title">🎟️ Apply Coupon</div>','<div class="mp-row">FOOD50 → −₹50 applied ✓</div>','<div class="mp-row">EXPIRED10 → "Coupon expired" ⚠️</div>','<div class="mp-btn">Discount verified ✓</div>'],logs:['[Appium] Finding element: //EditText[@hint="Coupon"]','[Appium] sendKeys("FOOD50") → discount −₹50 ✓','[Appium] sendKeys("EXPIRED10") → error shown ✓','[TestNG] Assert: expired coupon rejected → PASS'],pass:true},
+  {name:'Checkout & Payment Sandbox',icon:'💳',screen:['<div class="mp-title">💳 Payment Sandbox</div>','<div class="mp-row">Card: 4242 •••• 4242 ✓</div>','<div class="mp-row">Gateway: Sandbox → Approved</div>','<div class="mp-btn">Pay ₹546 ✓</div>'],logs:['[Appium] Clicking: //Button[@text="Pay"]','[Appium] Waiting for gateway response...','[TestNG] Assert: payment status = SUCCESS → PASS','[TestNG] Assert: order id generated → PASS'],pass:true},
+  {name:'Duplicate Order Prevention',icon:'🛡️',screen:['<div class="mp-title">🛡️ Idempotency Check</div>','<div class="mp-row">Tap Pay twice quickly...</div>','<div class="mp-row">Same key ord_9f3k → 1 order only ✓</div>','<div class="mp-btn">Duplicate blocked ✓</div>'],logs:['[Appium] Double-tap Pay button (network retry sim)','[Appium] Idempotency-Key: ord_9f3k (same)','[TestNG] Assert: order count == 1 → PASS','[TestNG] Assert: no double deduction → PASS'],pass:true},
+  {name:'Live Order Tracking',icon:'🛵',screen:['<div class="mp-title">🛵 Order #4821</div>','<div class="mp-row">Placed → Preparing → On the Way</div>','<div class="mp-row">📍 Rider 1.2 km away • ETA 12 min</div>','<div class="mp-btn">Status updates ✓</div>'],logs:['[Appium] Assert: status = Placed ✓','[Appium] Waiting for: Preparing... ✓','[Appium] Waiting for: Out for Delivery... ✓','[TestNG] Assert: tracking map visible → PASS'],pass:true},
+  {name:'Negative: Invalid Card',icon:'❌',screen:['<div class="mp-title">❌ Invalid Card Test</div>','<div class="mp-row">Card: 1111 •••• •••• ••••</div>','<div class="mp-row">Error: "Card declined" shown ✓</div>','<div class="mp-btn">No order placed ✓</div>'],logs:['[Appium] sendKeys("1111111111111111")','[Appium] Clicking Pay → gateway declines','[TestNG] Assert: error message shown → PASS','[TestNG] Assert: no order created → PASS'],pass:true}
+];
+let m1Idx=-1,m1Running=false,m1Passed=0,m1Timer=null;
+function m1Build(){
+  const box=document.getElementById('m1Tests');if(!box)return;box.innerHTML='';
+  m1Cases.forEach((c,i)=>{
+    const b=document.createElement('button');b.className='m1-test';b.id='m1t-'+i;
+    b.innerHTML=`<span class="st">${i+1}</span><span>${c.icon} ${c.name}</span><small>TestNG</small>`;
+    b.onclick=()=>m1RunOne(i);box.appendChild(b);
+  });
+}
+function m1Log(html,cls){
+  const log=document.getElementById('m1Log');
+  const d=document.createElement('div');if(cls)d.className=cls;d.textContent=html;
+  log.appendChild(d);log.scrollTop=log.scrollHeight;
+}
+function m1SetPhone(html){document.getElementById('m1Phone').innerHTML=html}
+function m1UpdateResult(){
+  document.getElementById('m1Result').textContent=m1Passed+' / '+m1Cases.length+' Passed';
+  document.getElementById('m1Progress').style.width=(m1Passed/m1Cases.length*100)+'%';
+}
+function m1RunOne(i){
+  if(m1Running)return;
+  m1Idx=i;const c=m1Cases[i];
+  document.querySelectorAll('.m1-test').forEach((el,j)=>el.classList.toggle('active',j===i));
+  const el=document.getElementById('m1t-'+i);
+  el.classList.remove('pass','fail');el.querySelector('.st').textContent='◌';
+  m1SetPhone(c.screen.join(''));
+  document.getElementById('m1Log').innerHTML='';
+  m1Log('▶ Running: '+c.name,'info');
+  let li=0;m1Running=true;
+  const iv=setInterval(()=>{
+    if(li<c.logs.length){m1Log(c.logs[li],c.logs[li].includes('PASS')?'ok':'dim');li++}
+    else{
+      clearInterval(iv);m1Running=false;
+      el.classList.remove('active');el.classList.add(c.pass?'pass':'fail');
+      el.querySelector('.st').textContent=c.pass?'✓':'✗';
+      m1Log(c.pass?'✅ TEST PASSED — '+c.name:'❌ TEST FAILED — '+c.name,c.pass?'ok':'err');
+      if(c.pass&&!el.dataset.counted){el.dataset.counted='1';m1Passed++}
+      m1UpdateResult();
+      if(m1AutoNext&&i<m1Cases.length-1)setTimeout(()=>m1RunOne(i+1),450);
+      else if(m1AutoNext&&i===m1Cases.length-1){showToast('✅ Module 1: All tests passed!');m1AutoNext=false;document.getElementById('m1RunBtn').textContent='▶ Run All Tests'}
+    }
+  },420);
+}
+let m1AutoNext=false;
+function m1RunAll(){
+  if(m1Running)return;
+  m1Reset(true);m1AutoNext=true;
+  document.getElementById('m1RunBtn').textContent='⏳ Running...';
+  showToast('🧪 Module 1: Running Appium suite...');
+  setTimeout(()=>m1RunOne(0),300);
+}
+function m1Reset(silent){
+  m1Running=false;m1Passed=0;m1AutoNext=false;
+  document.querySelectorAll('.m1-test').forEach(el=>{el.className='m1-test';delete el.dataset.counted;el.querySelector('.st').textContent=el.id.split('-')[1]*1+1});
+  document.getElementById('m1Log').innerHTML='<div class="dim">[Appium] Session reset. Ready.</div>';
+  m1SetPhone('<div class="mp-title">📱 App Screen — Ready</div><div class="mp-row">Press <b>▶ Run All Tests</b> to start...</div><div class="mp-btn">Appium Session: Idle</div>');
+  document.getElementById('m1RunBtn').textContent='▶ Run All Tests';
+  m1UpdateResult();
+  if(!silent)showToast('↻ Module 1 reset');
+}
+m1Build();m1UpdateResult();
+
+/* ================= MODULE 2 SIMULATOR (JMeter) ================= */
+let m2VU=100,m2Running=false,m2Data=[],m2Timer=null,m2Profile='Fixed';
+function m2Base(){
+  const map={'Fixed':150,'Ramp-up':220,'Peak':380,'Spike':620,'Stress':560};
+  return (map[m2Profile]||150)*(m2VU/100);
+}
+function m2SetVU(v){m2VU=+v;document.getElementById('vuVal').textContent=v+' VU';if(!m2Running)m2Draw()}
+function m2SetProfile(p,btn){
+  m2Profile=p;
+  document.querySelectorAll('[data-m2wl]').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  const vuMap={'Fixed':50,'Ramp-up':100,'Peak':180,'Spike':260,'Stress':320};
+  m2VU=vuMap[p];document.getElementById('vuSlider').value=m2VU;document.getElementById('vuVal').textContent=m2VU+' VU';
+  m2Data=Array.from({length:30},()=>m2Base()+Math.random()*m2Base()*.3);
+  m2Draw();showToast('📈 Profile: '+p+' • '+m2VU+' VU');
+}
+function m2Draw(){
+  const c=document.getElementById('m2Chart');if(!c)return;
+  const ctx=c.getContext('2d'),W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const max=Math.max(...m2Data,1200)*1.15;
+  ctx.strokeStyle='rgba(167,139,250,.18)';ctx.lineWidth=1;
+  for(let g=0;g<4;g++){const y=18+(H-46)*g/3;ctx.beginPath();ctx.moveTo(46,y);ctx.lineTo(W-12,y);ctx.stroke();
+    ctx.fillStyle='#7E7390';ctx.font='11px Segoe UI';ctx.fillText(Math.round(max*(1-g/3))+'',6,y+4);}
+  const slaY=H-28-(1000/max)*(H-46);
+  if(slaY>12){ctx.strokeStyle='#F43F5E';ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(46,slaY);ctx.lineTo(W-12,slaY);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#F43F5E';ctx.font='bold 11px Segoe UI';ctx.fillText('SLA 1000 ms',W-92,slaY-7);}
+  if(m2Data.length>1){
+    const grad=ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'rgba(219,39,119,.35)');grad.addColorStop(1,'rgba(167,139,250,0)');
+    ctx.beginPath();
+    m2Data.forEach((v,i)=>{const x=46+(W-64)*i/59;const y=H-28-(v/max)*(H-46);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+    ctx.strokeStyle='#7C3AED';ctx.lineWidth=2.5;ctx.stroke();
+    ctx.lineTo(46+(W-64)*(m2Data.length-1)/59,H-28);ctx.lineTo(46,H-28);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+    const lv=m2Data[m2Data.length-1],lx=46+(W-64)*(m2Data.length-1)/59,ly=H-28-(lv/max)*(H-46);
+    ctx.beginPath();ctx.arc(lx,ly,5,0,7);ctx.fillStyle='#DB2777';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+  }
+}
+function m2Tick(){
+  const base=m2Base();
+  const v=base+Math.random()*base*.35+(Math.random()>.93?base*.6:0);
+  m2Data.push(v);if(m2Data.length>60)m2Data.shift();
+  m2Draw();
+  const avg=m2Data.reduce((a,b)=>a+b,0)/m2Data.length;
+  const sorted=[...m2Data].sort((a,b)=>a-b);
+  const p95=sorted[Math.floor(sorted.length*.95)]||avg;
+  const thr=Math.round(m2VU*4.2*(0.9+Math.random()*.2));
+  const err=Math.max(.1,(m2VU/400)*3.4*(0.8+Math.random()*.5));
+  document.getElementById('m2Active').textContent=m2VU;
+  document.getElementById('m2Avg').textContent=Math.round(avg);
+  document.getElementById('m2P95').textContent=Math.round(p95);
+  document.getElementById('m2Thr').textContent=thr;
+  document.getElementById('m2Err').textContent=err.toFixed(1);
+  document.getElementById('m2Info').textContent=`${m2Profile} • ${m2VU} VU • p95 ${Math.round(p95)} ms ${p95>1000?'⚠️ SLA BREACH':''}`;
+  document.getElementById('m2P95').style.color=p95>1000?'#E11D48':'';
+}
+function m2Toggle(){
+  m2Running=!m2Running;
+  const btn=document.getElementById('m2RunBtn');
+  if(m2Running){
+    btn.textContent='⏹ Stop Test';btn.className='btn btn-pink btn-sm';
+    m2Timer=setInterval(m2Tick,650);
+    showToast('📈 JMeter: Load test started — '+m2VU+' VU');
+  }else{
+    btn.textContent='▶ Start Load Test';btn.className='btn btn-primary btn-sm';
+    clearInterval(m2Timer);
+    document.getElementById('m2Info').textContent='Stopped — press Start to run again';
+    showToast('⏹ JMeter: Load test stopped');
+  }
+}
+m2Data=Array.from({length:30},()=>m2Base()+Math.random()*m2Base()*.3);
+m2Draw();
+
+/* ---- Module 2 extras: thread group + API hits + auto-tour ---- */
+let m2Hits={rest:0,menu:0,cart:0,orders:0};
+function m2RenderThreads(){
+  const box=document.getElementById('threadDots');if(!box)return;
+  const shown=Math.min(m2VU,120);
+  box.innerHTML='';
+  for(let i=0;i<shown;i++){
+    const d=document.createElement('div');d.className='thread-dot';
+    d.style.animationDelay=(i*0.012)+'s';
+    if(m2VU>260&&i>200)d.style.background='linear-gradient(135deg,#FB7185,#E11D48)';
+    box.appendChild(d);
+  }
+  if(m2VU>120){
+    const more=document.createElement('span');
+    more.style.cssText='font-size:12px;font-weight:800;color:var(--purple-deep);align-self:center';
+    more.textContent='+'+(m2VU-120)+' more VU';
+    box.appendChild(more);
+  }
+}
+function m2TickHits(){
+  if(!m2Running)return;
+  m2Hits.rest+=Math.round(m2VU*.9*(0.5+Math.random()));
+  m2Hits.menu+=Math.round(m2VU*.7*(0.5+Math.random()));
+  m2Hits.cart+=Math.round(m2VU*.5*(0.5+Math.random()));
+  m2Hits.orders+=Math.round(m2VU*.35*(0.5+Math.random()));
+  document.getElementById('hitRest').textContent=m2Hits.rest.toLocaleString();
+  document.getElementById('hitMenu').textContent=m2Hits.menu.toLocaleString();
+  document.getElementById('hitCart').textContent=m2Hits.cart.toLocaleString();
+  document.getElementById('hitOrders').textContent=m2Hits.orders.toLocaleString();
+}
+setInterval(m2TickHits,650);
+let m2TourTimer=null;
+function m2AutoTour(){
+  if(m2TourTimer){clearInterval(m2TourTimer);m2TourTimer=null;showToast('⏹ Auto-tour stopped');return}
+  const profiles=['Fixed','Ramp-up','Peak','Spike','Stress'];
+  let idx=0;
+  if(!m2Running)m2Toggle();
+  showToast('🔄 Auto-tour: cycling all 5 profiles...');
+  const step=()=>{
+    const p=profiles[idx%profiles.length];
+    const btn=document.querySelector(`[data-m2wl="${p}"]`);
+    m2SetProfile(p,btn);m2RenderThreads();
+    idx++;
+  };
+  step();m2TourTimer=setInterval(step,4200);
+  setTimeout(()=>{if(m2TourTimer){clearInterval(m2TourTimer);m2TourTimer=null;showToast('✅ Auto-tour complete!')}},22000);
+}
+m2RenderThreads();
+const _m2SetVU=m2SetVU;
+m2SetVU=function(v){_m2SetVU(v);m2RenderThreads()};
+
+/* ================= INIT ================= */
+initReveals(document.getElementById('page-home'));
+animateCounters(document.getElementById('page-home'));
+</script>
+</body>
+</html>
